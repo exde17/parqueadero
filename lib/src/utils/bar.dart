@@ -13,7 +13,7 @@ class CustomAppBar {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'EmpowerApp',
+            'Parqueadero la 34',
             style: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.07,
               fontWeight: FontWeight.bold,
