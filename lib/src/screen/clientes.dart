@@ -1,4 +1,3 @@
-
 // import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 // import 'dart:convert';
@@ -306,9 +305,14 @@ import 'package:parqueadero/routes.dart';
 import 'package:parqueadero/src/utils/bar.dart';
 import 'package:parqueadero/src/utils/bottom_navigation.dart.dart';
 import 'package:parqueadero/src/utils/toast.dart';
+import 'package:logger/logger.dart';
+
+final TextEditingController _paymentController = TextEditingController();
+var logger = Logger();
 
 // Modelo de Cliente
 class Cliente {
+  final String id;
   final String nombre;
   final String? apellido;
   final String? guarda;
@@ -321,6 +325,7 @@ class Cliente {
 
   Cliente({
     required this.nombre,
+    required this.id,
     this.apellido,
     this.guarda,
     this.telefono,
@@ -333,6 +338,7 @@ class Cliente {
 
   factory Cliente.fromJson(Map<String, dynamic> json) {
     return Cliente(
+      id: json['id'] ?? '',
       nombre: json['nombre'] ?? '',
       apellido: json['apellido'],
       guarda: json['guarda'],
@@ -571,11 +577,11 @@ class _ClienteListPageState extends State<ClienteListPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.payment),
-                    onPressed: () => registrarPago(cliente, true),
+                    icon: const Icon(Icons.monetization_on),
+                    onPressed: () => _mostrarModalYRegistrarPago(context, cliente.id, cliente.valor),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.payment_outlined),
+                    icon: const Icon(Icons.sync),
                     onPressed: () => registrarPago(cliente, false),
                   ),
                 ],
@@ -596,3 +602,88 @@ class _ClienteListPageState extends State<ClienteListPage> {
   }
 }
 
+// Función para mostrar el modal y registrar el pago
+
+void _mostrarModalYRegistrarPago(BuildContext context, String clienteId, double valor) {
+  // Paso 1: Crear el TextEditingController
+  final TextEditingController valorController = TextEditingController(text: valor.toString());
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      // Aquí construyes el contenido del modal
+      return AlertDialog(
+        title: const Text('Guardar Pago'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('ID del Cliente: $clienteId'),
+              // Paso 2: Usar un TextField para permitir la modificación del valor
+              TextField(
+                controller: valorController,
+                decoration: const InputDecoration(
+                  labelText: 'Valor',
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              // Aquí puedes añadir más widgets para capturar más información si es necesario
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Guardar'),
+            onPressed: () {
+              // Paso 3: Utilizar el valor del TextEditingController
+              double valorModificado = double.tryParse(valorController.text) ?? valor;
+              realizarPago(context, datosPago(valorModificado, clienteId));
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
+// Función para realizar una solicitud POST al endpoint de pago
+Future<void> realizarPago(BuildContext context,Map<String, dynamic> datosPago) async {
+  // BuildContext context;
+  final url = Uri.parse('http://10.0.2.2:3000/api/pago-total');
+  final headers = {"Content-Type": "application/json"};
+  final body = json.encode(datosPago);
+
+  try {
+    final response = await http.post(url, headers: headers, body: body);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      // Si el servidor devuelve una respuesta OK, procesamos el JSON.
+      logger.i("Pago realizado con éxito");
+      // ignore: use_build_context_synchronously
+      showCustomToastWithIcon(context, 'Cliente creado exitosamente');
+      
+    } else {
+      // Si el servidor no devuelve una respuesta OK, lanzamos un error.
+      logger.e("Error al realizar el pago: ${response.body}");
+    }
+  } catch (e) {
+    logger.e("Error al conectar al servidor: $e");
+  }
+}
+Map<String, dynamic> datosPago(double valor, String cliente) {
+  // Asegúrate de validar o manejar adecuadamente los valores nulos o inválidos
+  if (valor == null || cliente == null || cliente.isEmpty) {
+    throw ArgumentError('El valor y el cliente no pueden ser nulos o vacíos.');
+  }
+  return {
+    'valor': valor,
+    'cliente': cliente,
+  };
+}
