@@ -66,10 +66,10 @@ class CustonBottomNavigationState extends State<CustonBottomNavigation> {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.move_down), label: 'Muevete'),
-        BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Empleate'),
+        BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Historial'),
+        BottomNavigationBarItem(icon: Icon(Icons.work), label: 'proximo'),
         BottomNavigationBarItem(
-            icon: Icon(Icons.insights_sharp), label: 'Promuevete'),
+            icon: Icon(Icons.insights_sharp), label: 'proximo'),
       ],
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.amber[800], // Color seleccionado

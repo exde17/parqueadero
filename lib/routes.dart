@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:parqueadero/src/screen/clientes.dart';
+import 'package:parqueadero/src/screen/history.dart';
 import 'package:parqueadero/src/screen/home.dart';
 import 'package:parqueadero/src/screen/login.dart';
 import 'package:parqueadero/src/screen/register.dart';
@@ -11,6 +12,7 @@ class Routes {
   static const String register = '/register';
   static const String login = '/login';
   static const String cliente = '/cliente';
+  static const String historial = '/historial';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -22,6 +24,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => const Login());
       case cliente:
         return MaterialPageRoute(builder: (_) => const ClienteListPage());
+      case historial:
+        return MaterialPageRoute(builder: (_) => const Historial());  
 
       default:
         return MaterialPageRoute(

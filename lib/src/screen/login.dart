@@ -7,6 +7,7 @@ import 'package:parqueadero/routes.dart';
 import 'dart:convert';
 
 import 'package:parqueadero/src/screen/register.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -337,15 +338,17 @@ class _LoginState extends State<Login> {
       });
       // Verifica si el widget aún está montado
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Login exitoso
-        // Navigator.pushReplacement(
-        //   // Usa pushReplacement para reemplazar la pantalla actual completamente
-        //   context,
-        //   MaterialPageRoute(
-        //       builder: (context) =>
-        //           const Home()), // Navega a la pantalla de inicio
-        // );
-        Navigator.pushReplacementNamed(context, Routes.home);
+        
+        final responseData = json.decode(response.body);
+        json.decode(response.body);
+        final String token = responseData['token'];
+
+        // Guardar el token usando SharedPreferences
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacementNamed(context, Routes.cliente);
       } else {
         // Error al hacer login
         ScaffoldMessenger.of(context).showSnackBar(

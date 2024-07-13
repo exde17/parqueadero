@@ -17,23 +17,24 @@ class CustomAppBar {
             style: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.07,
               fontWeight: FontWeight.bold,
-              color: Colors.grey,
+              color: const Color.fromARGB(255, 6, 21, 158),
             ),
           ),
           const SizedBox(width: 10),
-          Image.asset(
-            'lib/assets/logoEmpowerapp.png',
-            width: MediaQuery.of(context).size.width * 0.08,
-            height: MediaQuery.of(context).size.width * 0.08,
-          ),
+          // Image.asset(
+          //   'lib/assets/logoEmpowerapp.png',
+          //   width: MediaQuery.of(context).size.width * 0.08,
+          //   height: MediaQuery.of(context).size.width * 0.08,
+          // ),
         ],
       ),
       centerTitle: true,
       //boton de opciones
       leading: IconButton(
         icon: Icon(Icons.home, size: MediaQuery.of(context).size.width * 0.08),
+        color: Colors.blue,
         onPressed: () {
-          Navigator.pushNamed(context, Routes.home);
+          Navigator.pushNamed(context, Routes.cliente);
         },
       ),
 
@@ -58,6 +59,7 @@ class CustomAppBar {
           ],
           icon: Icon(Icons.person,
               size: MediaQuery.of(context).size.width * 0.08),
+              // color: Colors.blue,
         ),
       ],
     );
