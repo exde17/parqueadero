@@ -224,7 +224,7 @@ class Textt extends StatelessWidget {
 
 Future<void> register(String name, String apellido, String email,
     String password, BuildContext context) async {
-  final Uri url = Uri.parse('http://10.0.2.2:3000/api/auth/register');
+  final Uri url = Uri.parse('http://3.135.195.231:3000/api/auth/register');
   try {
     final response = await http.post(
       url,

@@ -322,7 +322,7 @@ class _LoginState extends State<Login> {
 
     // final Uri url = Uri.parse(
     //     'https://devempowerapp.gatewayit.co/empowerapp/api/auth/login');
-    final Uri url = Uri.parse('http://10.0.2.2:3000/api/auth/login');
+    final Uri url = Uri.parse('http://3.135.195.231:3000/api/auth/login');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

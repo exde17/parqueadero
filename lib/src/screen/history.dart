@@ -45,7 +45,7 @@ Future<List<RegistroHistorial>> fetchHistorial() async {
   }
 
   final response = await http.get(
-    Uri.parse('http://10.0.2.2:3000/api/historial'),
+    Uri.parse('http://3.135.195.231:3000/api/historial'),
     // Incluir el token en los encabezados
     headers: {
       'Authorization': 'Bearer $token',

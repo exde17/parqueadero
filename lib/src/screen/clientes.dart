@@ -101,7 +101,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
       return;
     }
 
-    final Uri url = Uri.parse('http://10.0.2.2:3000/api/cliente');
+    final Uri url = Uri.parse('http://3.135.195.231:3000/api/cliente');
     // Incluye el token en los encabezados
     final headers = {
       "Content-Type": "application/json",
@@ -237,7 +237,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
       return;
     }
 
-    final Uri url = Uri.parse('http://10.0.2.2:3000/api/cliente');
+    final Uri url = Uri.parse('http://3.135.195.231:3000/api/cliente');
     try {
       final response = await http.post(
         url,
@@ -412,7 +412,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:3000/api/pago-total');
+    final url = Uri.parse('http://3.135.195.231:3000/api/pago-total');
     final headers = {
       "Content-Type": "application/json",
       "Authorization": "Bearer $token",
@@ -475,7 +475,7 @@ Future<Map<String, dynamic>> obtenerDatosPago(String clienteId) async {
   }
 
   final url =
-      Uri.parse('http://10.0.2.2:3000/api/pago-total/valores/$clienteId');
+      Uri.parse('http://3.135.195.231:3000/api/pago-total/valores/$clienteId');
   // Incluye el token en los encabezados de la solicitud
   final response = await http.get(url, headers: {
     "Content-Type": "application/json",
