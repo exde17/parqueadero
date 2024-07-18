@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:parqueadero/routes.dart';
+import 'package:parqueadero/src/utils/config.dart';
 import 'package:parqueadero/src/utils/toast.dart';
 
 TextEditingController _passwordController = TextEditingController();
@@ -224,7 +225,7 @@ class Textt extends StatelessWidget {
 
 Future<void> register(String name, String apellido, String email,
     String password, BuildContext context) async {
-  final Uri url = Uri.parse('http://3.135.195.231:3000/api/auth/register');
+  final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/auth/register');
   try {
     final response = await http.post(
       url,
@@ -245,11 +246,11 @@ Future<void> register(String name, String apellido, String email,
       var decodedResponse = jsonDecode(responseBody);
       String message = decodedResponse['message'][0];
       // ignore: use_build_context_synchronously
-      showCustomToastWithIcon(context, message);
+      showToastMario(context, message);
     }
   } catch (e) {
     // Muestra un mensaje de error en caso de fallo
     // ignore: use_build_context_synchronously
-    showCustomToastWithIcon(context, 'Error al registrar. Inténtalo de nuevo.');
+    showToastMario(context, 'Error al registrar. Inténtalo de nuevo.');
   }
 }

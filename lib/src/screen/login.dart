@@ -7,6 +7,7 @@ import 'package:parqueadero/routes.dart';
 import 'dart:convert';
 
 import 'package:parqueadero/src/screen/register.dart';
+import 'package:parqueadero/src/utils/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -61,11 +62,11 @@ class _LoginState extends State<Login> {
                 width: MediaQuery.of(context).size.width *
                     0.04), // Espacio entre el título y la imagen
             // Añade tu imagen
-            Image.asset(
-              'lib/assets/logoHumanSave_transparent.png', // Asegúrate de que la ruta de tu imagen sea correcta
-              width: MediaQuery.of(context).size.width * 0.1,
-              height: MediaQuery.of(context).size.height * 0.1,
-            ),
+            // Image.asset(
+            //   'lib/assets/logoHumanSave_transparent.png', // Asegúrate de que la ruta de tu imagen sea correcta
+            //   width: MediaQuery.of(context).size.width * 0.1,
+            //   height: MediaQuery.of(context).size.height * 0.1,
+            // ),
           ],
         ),
         centerTitle:
@@ -322,7 +323,7 @@ class _LoginState extends State<Login> {
 
     // final Uri url = Uri.parse(
     //     'https://devempowerapp.gatewayit.co/empowerapp/api/auth/login');
-    final Uri url = Uri.parse('http://3.135.195.231:3000/api/auth/login');
+    final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/auth/login');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

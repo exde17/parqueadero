@@ -15,7 +15,7 @@ class CustomAppBar {
           Text(
             'Parqueadero la 34',
             style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.07,
+              fontSize: MediaQuery.of(context).size.width * 0.06,
               fontWeight: FontWeight.bold,
               color: const Color.fromARGB(255, 6, 21, 158),
             ),
