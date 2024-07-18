@@ -13,7 +13,7 @@ class CustomAppBar {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Parqueadero la 34',
+            'Parqueadero la 36',
             style: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.06,
               fontWeight: FontWeight.bold,
