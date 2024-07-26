@@ -9,7 +9,6 @@ import 'package:parqueadero/src/utils/config.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 // Paso 1: Definir la estructura de datos
 class Alquiler {
   final String id; // Cambiado a String si el id es un UUID.
@@ -29,7 +28,9 @@ class Alquiler {
       id: json['id'], // No intentamos convertir id a int.
       nombreCliente: json['nombreCliente'],
       tipo: json['tipo'],
-      precio: json['precio'] is int ? json['precio'] : int.parse(json['precio'].toString()),
+      precio: json['precio'] is int
+          ? json['precio']
+          : int.parse(json['precio'].toString()),
     );
   }
 }
@@ -119,7 +120,8 @@ class _AlquileresPageState extends State<AlquileresPage> {
     if (response.statusCode == 200) {
       List<dynamic> body = json.decode(response.body);
       setState(() {
-        alquileres = body.map((dynamic item) => Alquiler.fromJson(item)).toList();
+        alquileres =
+            body.map((dynamic item) => Alquiler.fromJson(item)).toList();
       });
       EasyLoading.dismiss();
     } else {
@@ -148,7 +150,9 @@ class _AlquileresPageState extends State<AlquileresPage> {
     if (response.statusCode == 200) {
       List<dynamic> body = json.decode(response.body);
       setState(() {
-        historial = body.map((dynamic item) => HistorialAlquiler.fromJson(item)).toList();
+        historial = body
+            .map((dynamic item) => HistorialAlquiler.fromJson(item))
+            .toList();
       });
       EasyLoading.dismiss();
     } else {
@@ -189,31 +193,90 @@ class _AlquileresPageState extends State<AlquileresPage> {
     }
   }
 
+  // Future<void> entregarAlquiler(String id) async {
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   final String? token = prefs.getString('auth_token');
+
+  //   if (token == null) {
+  //     throw Exception('Token no encontrado');
+  //   }
+
+  //   EasyLoading.show(status: 'Entregando...');
+
+  //   final response = await http.get(
+  //     Uri.parse(
+  //         '${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
+  //     headers: {
+  //       'Authorization': 'Bearer $token',
+  //     },
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     EasyLoading.dismiss();
+  //     fetchAlquileres(); // Refrescar la lista de alquileres
+  //   } else {
+  //     EasyLoading.dismiss();
+  //     throw Exception('Failed to entregar alquiler');
+  //   }
+  // }
+
   Future<void> entregarAlquiler(String id) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('auth_token');
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? token = prefs.getString('auth_token');
 
-    if (token == null) {
-      throw Exception('Token no encontrado');
-    }
-
-    EasyLoading.show(status: 'Entregando...');
-
-    final response = await http.get(
-      Uri.parse('${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      EasyLoading.dismiss();
-      fetchAlquileres(); // Refrescar la lista de alquileres
-    } else {
-      EasyLoading.dismiss();
-      throw Exception('Failed to entregar alquiler');
-    }
+  if (token == null) {
+    throw Exception('Token no encontrado');
   }
+
+  // Mostrar cuadro de diálogo de confirmación
+  bool? confirm = await showDialog<bool>(
+    // ignore: use_build_context_synchronously
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Confirmación'),
+        content: const Text('¿Estás seguro de que deseas entregar este alquiler?'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+          ),
+          TextButton(
+            child: const Text('Confirmar'),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirm != true) {
+    return; // Si el usuario cancela, no hacer nada
+  }
+
+  EasyLoading.show(status: 'Entregando...');
+
+  final response = await http.get(
+    Uri.parse(
+        '${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
+    headers: {
+      'Authorization': 'Bearer $token',
+    },
+  );
+
+  if (response.statusCode == 200 || response.statusCode == 201) {
+    EasyLoading.dismiss();
+    fetchAlquileres();
+    // Aquí puedes agregar cualquier acción adicional después de entregar el alquiler
+  } else {
+    EasyLoading.dismiss();
+    throw Exception('Failed to entregar alquiler');
+  }
+}
 
   void _showCrearAlquilerDialog() {
     final TextEditingController nombreController = TextEditingController();
@@ -271,43 +334,33 @@ class _AlquileresPageState extends State<AlquileresPage> {
                   return ListView.builder(
                     itemCount: historial.length,
                     itemBuilder: (context, index) {
-                      
-//                       return ListTile(
-//   title: Text(historial[index].nombreCliente, style: const TextStyle(fontWeight: FontWeight.bold)),
-//   subtitle: Column(
-//     crossAxisAlignment: CrossAxisAlignment.start,
-//     children: [
-//       Text('Fecha: ${DateFormat('dd/MM/yyyy').format(historial[index].fechaCreacion)}'),
-//       Text('Valor Pago: ${historial[index].valorPago}'),
-//     ],
-//   ),
-//   isThreeLine: true,
-// );
-
-return Container(
-  margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-  // decoration: BoxDecoration(
-  //   border: Border.all(color: Colors.grey),
-  //   borderRadius: BorderRadius.circular(10.0),
-  // ),
-  child: ListTile(
-    title: Text(
-      historial[index].nombreCliente,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Color.fromARGB(255, 26, 47, 165), // Azul turquesa
-      ),
-    ),
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Fecha: ${DateFormat('dd/MM/yyyy').format(historial[index].fechaCreacion)}'),
-        Text('Valor Pago: ${historial[index].valorPago}'),
-      ],
-    ),
-    isThreeLine: true,
-  ),
-);
+                      return Container(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 5.0, horizontal: 10.0),
+                        // decoration: BoxDecoration(
+                        //   border: Border.all(color: Colors.grey),
+                        //   borderRadius: BorderRadius.circular(10.0),
+                        // ),
+                        child: ListTile(
+                          title: Text(
+                            historial[index].nombreCliente,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(
+                                  255, 26, 47, 165), // Azul turquesa
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  'Fecha: ${DateFormat('dd/MM/yyyy').format(historial[index].fechaCreacion)}'),
+                              Text('Valor Pago: ${historial[index].valorPago}'),
+                            ],
+                          ),
+                          isThreeLine: true,
+                        ),
+                      );
                     },
                   );
                 },
@@ -322,23 +375,28 @@ return Container(
               itemCount: alquileres.length,
               itemBuilder: (context, index) {
                 return Container(
-  margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-  decoration: BoxDecoration(
-    border: Border.all(color: Colors.grey),
-    borderRadius: BorderRadius.circular(10.0),
-  ),
-                child:  ListTile(
-                  title: Text(alquileres[index].nombreCliente,
-                  style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Color.fromARGB(255, 7, 24, 124), // Azul turquesa
-      ),),
-                  subtitle: Text('${alquileres[index].tipo} - \$${alquileres[index].precio}'),
-                  trailing: ElevatedButton(
-                    onPressed: () => entregarAlquiler(alquileres[index].id),
-                    child: const Text('Entregar'),
-                  ),
-                ));
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 5.0, horizontal: 10.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: ListTile(
+                      title: Text(
+                        alquileres[index].nombreCliente,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color:
+                              Color.fromARGB(255, 7, 24, 124), // Azul turquesa
+                        ),
+                      ),
+                      subtitle: Text(
+                          '${alquileres[index].tipo} - \$${alquileres[index].precio}'),
+                      trailing: ElevatedButton(
+                        onPressed: () => entregarAlquiler(alquileres[index].id),
+                        child: const Text('Entregar'),
+                      ),
+                    ));
               },
             ),
       floatingActionButton: FloatingActionButton(
@@ -360,4 +418,3 @@ void main() {
     ),
   );
 }
-
