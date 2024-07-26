@@ -67,7 +67,7 @@ class CustonBottomNavigationState extends State<CustonBottomNavigation> {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Historial'),
-        BottomNavigationBarItem(icon: Icon(Icons.work), label: 'proximo'),
+        BottomNavigationBarItem(icon: Icon(Icons.car_rental), label: 'Alquiler'),
         BottomNavigationBarItem(
             icon: Icon(Icons.insights_sharp), label: 'proximo'),
       ],

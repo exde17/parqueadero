@@ -1,4 +1,6 @@
 
+// ignore_for_file: use_build_context_synchronously
+
 // import 'package:flutter/material.dart';
 // import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:http/http.dart' as http;
@@ -58,9 +60,12 @@
 // }
 
 // void main() {
-//   runApp(const MaterialApp(
-//     home: ClienteListPage(),
-//   ));
+//   runApp(
+//     MaterialApp(
+//       home: const ClienteListPage(),
+//       builder: EasyLoading.init(),
+//     ),
+//   );
 // }
 
 // class ClienteListPage extends StatefulWidget {
@@ -79,9 +84,6 @@
 //       if (index == 0) {
 //         Navigator.pushNamed(context, Routes.historial);
 //       }
-//       // if (index == 1) {
-//       //   Navigator.pushNamed(context, Routes.home);
-//       // }
 //     });
 //   }
 
@@ -102,8 +104,9 @@
 //       return;
 //     }
 
+//     EasyLoading.show(status: 'Cargando...');
+
 //     final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/cliente');
-//     // Incluye el token en los encabezados
 //     final headers = {
 //       "Content-Type": "application/json",
 //       "Authorization": "Bearer $token",
@@ -123,8 +126,9 @@
 //         showCustomToastWithIcon(context, 'Error al cargar los clientes');
 //       }
 //     } catch (e) {
-//       showCustomToastWithIcon(
-//           context, 'Error de conexión. Inténtalo de nuevo.');
+//       showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
+//     } finally {
+//       EasyLoading.dismiss();
 //     }
 //   }
 
@@ -230,13 +234,12 @@
 //     final SharedPreferences prefs = await SharedPreferences.getInstance();
 //     final String? token = prefs.getString('auth_token');
 
-//     // Imprime el token para depuración
-//     // print("Token recuperado: $token");
-
 //     if (token == null) {
 //       showCustomToastWithIcon(context, 'Error: Token no encontrado');
 //       return;
 //     }
+
+//     EasyLoading.show(status: 'Guardando...');
 
 //     final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/cliente');
 //     try {
@@ -268,8 +271,9 @@
 //       }
 //     } catch (e) {
 //       print('Error: $e'); // Imprime el error para depuración
-//       showCustomToastWithIcon(
-//           context, 'Error al crear el cliente. Inténtalo de nuevo.');
+//       showCustomToastWithIcon(context, 'Error al crear el cliente. Inténtalo de nuevo.');
+//     } finally {
+//       EasyLoading.dismiss();
 //     }
 //   }
 
@@ -281,9 +285,12 @@
 
 //   void verDetalle(Cliente cliente) async {
 //     try {
+//       EasyLoading.show(status: 'Cargando...');
 //       final datosPago = await obtenerDatosPago(cliente.id);
+//       EasyLoading.dismiss();
 //       mostrarModalPago(context, datosPago);
 //     } catch (e) {
+//       EasyLoading.dismiss();
 //       showCustomToastWithIcon(context, 'Error al cargar los datos del pago');
 //     }
 //   }
@@ -413,6 +420,8 @@
 //       return;
 //     }
 
+//     EasyLoading.show(status: 'Realizando pago...');
+
 //     final url = Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total');
 //     final headers = {
 //       "Content-Type": "application/json",
@@ -423,16 +432,11 @@
 //     try {
 //       final response = await http.post(url, headers: headers, body: body);
 //       if (response.statusCode == 200 || response.statusCode == 201) {
-        
 //         logger.i('pilla: ${response.statusCode}');
 //         logger.i("Pago realizado con éxito");
-        
+
 //         EasyLoading.showToast('Pago realizado exitosamente');
 //         fetchClientes();
-//         // if (context.mounted) {
-//         //   showCustomToastWithIcon(context, 'Pago realizado exitosamente');
-//         //   fetchClientes();
-//         // }
 //       } else {
 //         logger.e("Error al realizar el pago: ${response.body}");
 //         if (context.mounted) {
@@ -445,6 +449,8 @@
 //       if (context.mounted) {
 //         showCustomToastWithIcon(context, 'Error al conectar al servidor: $e');
 //       }
+//     } finally {
+//       EasyLoading.dismiss();
 //     }
 //   }
 
@@ -458,13 +464,16 @@
 //   //////////////////modal externo
 //   Future<void> mostrarInformacionPago(clienteId) async {
 //     try {
-//       // Supongamos que 'clienteId' es un valor conocido o obtenido de otra manera
-//       // final clienteId = '12345';
+//       EasyLoading.show(status: 'Cargando...');
 //       final datosPago = await obtenerDatosPago(clienteId);
+//       EasyLoading.dismiss();
+//       // ignore: use_build_context_synchronously
 //       mostrarModalPago(context, datosPago);
 //     } catch (e) {
+//       EasyLoading.dismiss();
 //       print(e);
 //       // Manejo del error
+//       // ignore: use_build_context_synchronously
 //       ScaffoldMessenger.of(context).showSnackBar(
 //         const SnackBar(content: Text('Error al obtener los datos del pago')),
 //       );
@@ -482,7 +491,6 @@
 
 //   final url =
 //       Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/valores/$clienteId');
-//   // Incluye el token en los encabezados de la solicitud
 //   final response = await http.get(url, headers: {
 //     "Content-Type": "application/json",
 //     "Authorization": "Bearer $token",
@@ -599,12 +607,16 @@ class ClienteListPage extends StatefulWidget {
 
 class _ClienteListPageState extends State<ClienteListPage> {
   int _selectedIndex = 0;
+  double totalPagos = 0.0;
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
       if (index == 0) {
         Navigator.pushNamed(context, Routes.historial);
+      }
+      if (index == 1) {
+        Navigator.pushNamed(context, Routes.alquiler);
       }
     });
   }
@@ -643,6 +655,9 @@ class _ClienteListPageState extends State<ClienteListPage> {
               .map((json) => Cliente.fromJson(json))
               .where((cliente) => cliente.isActive)
               .toList();
+          totalPagos = clientes
+              .where((cliente) => cliente.pago)
+              .fold(0.0, (sum, cliente) => sum + cliente.valor);
         });
       } else {
         showCustomToastWithIcon(context, 'Error al cargar los clientes');
@@ -825,52 +840,68 @@ class _ClienteListPageState extends State<ClienteListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar.buildAppBar(context),
-      body: ListView.builder(
-        itemCount: clientes.length,
-        itemBuilder: (context, index) {
-          final cliente = clientes[index];
-          return Card(
-            child: ListTile(
-              title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (!cliente.pago) Text('Valor a pagar: \$${cliente.valor}'),
-                  Text(
-                    cliente.pago ? 'Pago' : 'Sin Pago',
-                    style: TextStyle(
-                      color: cliente.pago
-                          ? (cliente.novedad ? Colors.red : Colors.green)
-                          : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.sync,
-                    color: cliente.pago
-                        ? (cliente.novedad ? Colors.red : Colors.green)
-                        : Colors.grey,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.monetization_on),
-                    onPressed: cliente.pago && !cliente.novedad
-                        ? null
-                        : () => _mostrarModalYRegistrarPago(
-                            context, cliente.id, cliente.valor, cliente.nombre),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.info),
-                    onPressed: () => verDetalle(cliente),
-                  ),
-                ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          );
-        },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: clientes.length,
+              itemBuilder: (context, index) {
+                final cliente = clientes[index];
+                return Card(
+                  child: ListTile(
+                    title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!cliente.pago) Text('Valor a pagar: \$${cliente.valor}'),
+                        Text(
+                          cliente.pago ? 'Pago' : 'Sin Pago',
+                          style: TextStyle(
+                            color: cliente.pago
+                                ? (cliente.novedad ? Colors.red : Colors.green)
+                                : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.sync,
+                          color: cliente.pago
+                              ? (cliente.novedad ? Colors.red : Colors.green)
+                              : Colors.grey,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.monetization_on),
+                          onPressed: cliente.pago && !cliente.novedad
+                              ? null
+                              : () => _mostrarModalYRegistrarPago(
+                                  context, cliente.id, cliente.valor, cliente.nombre),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.info),
+                          onPressed: () => verDetalle(cliente),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: crearCliente,
@@ -958,6 +989,9 @@ class _ClienteListPageState extends State<ClienteListPage> {
         logger.i("Pago realizado con éxito");
 
         EasyLoading.showToast('Pago realizado exitosamente');
+        setState(() {
+          totalPagos += datosPago['valor'];
+        });
         fetchClientes();
       } else {
         logger.e("Error al realizar el pago: ${response.body}");
@@ -1050,5 +1084,6 @@ void mostrarModalPago(BuildContext context, Map<String, dynamic> datosPago) {
     },
   );
 }
+
 
 
