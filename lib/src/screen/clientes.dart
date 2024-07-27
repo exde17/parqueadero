@@ -1,6 +1,4 @@
 
-// ignore_for_file: use_build_context_synchronously
-
 // import 'package:flutter/material.dart';
 // import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:http/http.dart' as http;
@@ -77,12 +75,16 @@
 
 // class _ClienteListPageState extends State<ClienteListPage> {
 //   int _selectedIndex = 0;
+//   double totalPagos = 0.0;
 
 //   void _onItemTapped(int index) {
 //     setState(() {
 //       _selectedIndex = index;
 //       if (index == 0) {
 //         Navigator.pushNamed(context, Routes.historial);
+//       }
+//       if (index == 1) {
+//         Navigator.pushNamed(context, Routes.alquiler);
 //       }
 //     });
 //   }
@@ -121,6 +123,9 @@
 //               .map((json) => Cliente.fromJson(json))
 //               .where((cliente) => cliente.isActive)
 //               .toList();
+//           totalPagos = clientes
+//               .where((cliente) => cliente.pago)
+//               .fold(0.0, (sum, cliente) => sum + cliente.valor);
 //         });
 //       } else {
 //         showCustomToastWithIcon(context, 'Error al cargar los clientes');
@@ -303,52 +308,68 @@
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: CustomAppBar.buildAppBar(context),
-//       body: ListView.builder(
-//         itemCount: clientes.length,
-//         itemBuilder: (context, index) {
-//           final cliente = clientes[index];
-//           return Card(
-//             child: ListTile(
-//               title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
-//               subtitle: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   if (!cliente.pago) Text('Valor a pagar: \$${cliente.valor}'),
-//                   Text(
-//                     cliente.pago ? 'Pago' : 'Sin Pago',
-//                     style: TextStyle(
-//                       color: cliente.pago
-//                           ? (cliente.novedad ? Colors.red : Colors.green)
-//                           : Colors.black,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               trailing: Row(
-//                 mainAxisSize: MainAxisSize.min,
-//                 children: [
-//                   Icon(
-//                     Icons.sync,
-//                     color: cliente.pago
-//                         ? (cliente.novedad ? Colors.red : Colors.green)
-//                         : Colors.grey,
-//                   ),
-//                   IconButton(
-//                     icon: const Icon(Icons.monetization_on),
-//                     onPressed: cliente.pago && !cliente.novedad
-//                         ? null
-//                         : () => _mostrarModalYRegistrarPago(
-//                             context, cliente.id, cliente.valor, cliente.nombre),
-//                   ),
-//                   IconButton(
-//                     icon: const Icon(Icons.info),
-//                     onPressed: () => verDetalle(cliente),
-//                   ),
-//                 ],
+//       body: Column(
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.all(16.0),
+//             child: Text(
+//               'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
+//               style: const TextStyle(
+//                 fontSize: 24,
+//                 fontWeight: FontWeight.bold,
 //               ),
 //             ),
-//           );
-//         },
+//           ),
+//           Expanded(
+//             child: ListView.builder(
+//               itemCount: clientes.length,
+//               itemBuilder: (context, index) {
+//                 final cliente = clientes[index];
+//                 return Card(
+//                   child: ListTile(
+//                     title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
+//                     subtitle: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         if (!cliente.pago) Text('Valor a pagar: \$${cliente.valor}'),
+//                         Text(
+//                           cliente.pago ? 'Pago' : 'Sin Pago',
+//                           style: TextStyle(
+//                             color: cliente.pago
+//                                 ? (cliente.novedad ? Colors.red : Colors.green)
+//                                 : Colors.black,
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                     trailing: Row(
+//                       mainAxisSize: MainAxisSize.min,
+//                       children: [
+//                         Icon(
+//                           Icons.sync,
+//                           color: cliente.pago
+//                               ? (cliente.novedad ? Colors.red : Colors.green)
+//                               : Colors.grey,
+//                         ),
+//                         IconButton(
+//                           icon: const Icon(Icons.monetization_on),
+//                           onPressed: cliente.pago && !cliente.novedad
+//                               ? null
+//                               : () => _mostrarModalYRegistrarPago(
+//                                   context, cliente.id, cliente.valor, cliente.nombre),
+//                         ),
+//                         IconButton(
+//                           icon: const Icon(Icons.info),
+//                           onPressed: () => verDetalle(cliente),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//           ),
+//         ],
 //       ),
 //       floatingActionButton: FloatingActionButton(
 //         onPressed: crearCliente,
@@ -436,6 +457,9 @@
 //         logger.i("Pago realizado con éxito");
 
 //         EasyLoading.showToast('Pago realizado exitosamente');
+//         setState(() {
+//           totalPagos += datosPago['valor'];
+//         });
 //         fetchClientes();
 //       } else {
 //         logger.e("Error al realizar el pago: ${response.body}");
@@ -467,13 +491,11 @@
 //       EasyLoading.show(status: 'Cargando...');
 //       final datosPago = await obtenerDatosPago(clienteId);
 //       EasyLoading.dismiss();
-//       // ignore: use_build_context_synchronously
 //       mostrarModalPago(context, datosPago);
 //     } catch (e) {
 //       EasyLoading.dismiss();
 //       print(e);
 //       // Manejo del error
-//       // ignore: use_build_context_synchronously
 //       ScaffoldMessenger.of(context).showSnackBar(
 //         const SnackBar(content: Text('Error al obtener los datos del pago')),
 //       );
@@ -530,6 +552,11 @@
 //     },
 //   );
 // }
+
+
+// // ignore_for_file: use_build_context_synchronously
+
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -627,6 +654,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
   void initState() {
     super.initState();
     fetchClientes();
+    fetchTotalPagos();
   }
 
   Future<void> fetchClientes() async {
@@ -655,9 +683,6 @@ class _ClienteListPageState extends State<ClienteListPage> {
               .map((json) => Cliente.fromJson(json))
               .where((cliente) => cliente.isActive)
               .toList();
-          totalPagos = clientes
-              .where((cliente) => cliente.pago)
-              .fold(0.0, (sum, cliente) => sum + cliente.valor);
         });
       } else {
         showCustomToastWithIcon(context, 'Error al cargar los clientes');
@@ -668,6 +693,87 @@ class _ClienteListPageState extends State<ClienteListPage> {
       EasyLoading.dismiss();
     }
   }
+
+  Future<void> fetchTotalPagos() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String? token = prefs.getString('auth_token');
+
+  if (token == null) {
+    showCustomToastWithIcon(context, 'Error: Token no encontrado');
+    return;
+  }
+
+  EasyLoading.show(status: 'Cargando total de pagos...');
+
+  final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/sumaPagos');
+  final headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer $token",
+  };
+  try {
+    final response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final responseBody = response.body;
+
+      // Intentar decodificar el JSON
+      try {
+        final data = json.decode(responseBody);
+        setState(() {
+          totalPagos = double.parse(data['totalPagos'].replaceAll('.', '').replaceAll(',', '.')); // Manejar la conversión correcta
+        });
+      } catch (e) {
+        // Si falla la decodificación de JSON, tratar la respuesta como un número entero
+        setState(() {
+          totalPagos = double.parse(responseBody.replaceAll('.', '').replaceAll(',', '.')); // Manejar la conversión correcta
+        });
+      }
+    } else {
+      showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
+    }
+  } catch (e) {
+    print('Error al cargar el total de pagos: $e');
+    showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
+  } finally {
+    EasyLoading.dismiss();
+  }
+}
+
+  // Future<void> fetchTotalPagos() async {
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   final String? token = prefs.getString('auth_token');
+
+  //   if (token == null) {
+  //     showCustomToastWithIcon(context, 'Error: Token no encontrado');
+  //     return;
+  //   }
+
+  //   EasyLoading.show(status: 'Cargando total de pagos...');
+
+  //   final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/sumaPagos');
+  //   final headers = {
+  //     "Content-Type": "application/json",
+  //     "Authorization": "Bearer $token",
+  //   };
+  //   try {
+      
+  //     final response = await http.get(url, headers: headers);
+  //     // logger.i('fetchTotalPagos: ');
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final data = json.decode(response.body);
+  //       setState(() {
+  //         totalPagos = data['totalPagos'];
+  //       });
+  //     } else {
+  //       showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
+  //     }
+  //   } catch (e) {
+  //     logger.e('fetchTotalPagos: $e');
+  //     showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
+  //   } finally {
+  //     EasyLoading.dismiss();
+  //   }
+  // }
 
   void crearCliente() {
     showDialog(
@@ -800,6 +906,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
         Navigator.of(context).pop();
         showToastMario(context, 'Cliente creado exitosamente');
         fetchClientes();
+        fetchTotalPagos();  // Refrescar la suma de los pagos
       } else {
         var responseBody = response.body;
         var decodedResponse = jsonDecode(responseBody);
@@ -989,10 +1096,8 @@ class _ClienteListPageState extends State<ClienteListPage> {
         logger.i("Pago realizado con éxito");
 
         EasyLoading.showToast('Pago realizado exitosamente');
-        setState(() {
-          totalPagos += datosPago['valor'];
-        });
         fetchClientes();
+        fetchTotalPagos(); // Refrescar la suma de los pagos
       } else {
         logger.e("Error al realizar el pago: ${response.body}");
         if (context.mounted) {
@@ -1084,6 +1189,3 @@ void mostrarModalPago(BuildContext context, Map<String, dynamic> datosPago) {
     },
   );
 }
-
-
-

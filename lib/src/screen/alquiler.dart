@@ -1,12 +1,12 @@
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:intl/intl.dart';  // Para el formateo de fechas
 import 'package:parqueadero/routes.dart';
-import 'package:parqueadero/src/screen/clientes.dart';
 import 'package:parqueadero/src/utils/bottom_navigation.dart.dart';
 import 'package:parqueadero/src/utils/config.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Paso 1: Definir la estructura de datos
@@ -28,32 +28,10 @@ class Alquiler {
       id: json['id'], // No intentamos convertir id a int.
       nombreCliente: json['nombreCliente'],
       tipo: json['tipo'],
-      precio: json['precio'] is int
-          ? json['precio']
-          : int.parse(json['precio'].toString()),
+      precio: json['precio'] is int ? json['precio'] : int.parse(json['precio'].toString()),
     );
   }
 }
-
-// class HistorialAlquiler {
-//   final String fechaCreacion;
-//   final String valorPago;
-//   final String nombreCliente;
-
-//   HistorialAlquiler({
-//     required this.fechaCreacion,
-//     required this.valorPago,
-//     required this.nombreCliente,
-//   });
-
-//   factory HistorialAlquiler.fromJson(Map<String, dynamic> json) {
-//     return HistorialAlquiler(
-//       fechaCreacion: json['fechaCreacion'],
-//       valorPago: json['valorPago'],
-//       nombreCliente: json['nombreCliente'],
-//     );
-//   }
-// }
 
 class HistorialAlquiler {
   final DateTime fechaCreacion;
@@ -130,7 +108,7 @@ class _AlquileresPageState extends State<AlquileresPage> {
     }
   }
 
-  Future<void> fetchHistorial() async {
+  Future<List<HistorialAlquiler>> fetchHistorial() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('auth_token');
 
@@ -149,12 +127,10 @@ class _AlquileresPageState extends State<AlquileresPage> {
 
     if (response.statusCode == 200) {
       List<dynamic> body = json.decode(response.body);
-      setState(() {
-        historial = body
-            .map((dynamic item) => HistorialAlquiler.fromJson(item))
-            .toList();
-      });
       EasyLoading.dismiss();
+      return body
+          .map((dynamic item) => HistorialAlquiler.fromJson(item))
+          .toList();
     } else {
       EasyLoading.dismiss();
       throw Exception('Failed to load historial');
@@ -193,90 +169,63 @@ class _AlquileresPageState extends State<AlquileresPage> {
     }
   }
 
-  // Future<void> entregarAlquiler(String id) async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final String? token = prefs.getString('auth_token');
-
-  //   if (token == null) {
-  //     throw Exception('Token no encontrado');
-  //   }
-
-  //   EasyLoading.show(status: 'Entregando...');
-
-  //   final response = await http.get(
-  //     Uri.parse(
-  //         '${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
-  //     headers: {
-  //       'Authorization': 'Bearer $token',
-  //     },
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     EasyLoading.dismiss();
-  //     fetchAlquileres(); // Refrescar la lista de alquileres
-  //   } else {
-  //     EasyLoading.dismiss();
-  //     throw Exception('Failed to entregar alquiler');
-  //   }
-  // }
-
   Future<void> entregarAlquiler(String id) async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String? token = prefs.getString('auth_token');
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('auth_token');
 
-  if (token == null) {
-    throw Exception('Token no encontrado');
+    if (token == null) {
+      throw Exception('Token no encontrado');
+    }
+
+    // Mostrar cuadro de diálogo de confirmación
+    bool? confirm = await showDialog<bool>(
+      // ignore: use_build_context_synchronously
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmación'),
+          content: const Text('¿Estás seguro de que deseas entregar este alquiler?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Confirmar'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) {
+      return; // Si el usuario cancela, no hacer nada
+    }
+
+    EasyLoading.show(status: 'Entregando...');
+
+    final response = await http.get(
+      Uri.parse(
+          '${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      EasyLoading.dismiss();
+      fetchAlquileres();
+      // Aquí puedes agregar cualquier acción adicional después de entregar el alquiler
+    } else {
+      EasyLoading.dismiss();
+      throw Exception('Failed to entregar alquiler');
+    }
   }
-
-  // Mostrar cuadro de diálogo de confirmación
-  bool? confirm = await showDialog<bool>(
-    // ignore: use_build_context_synchronously
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Confirmación'),
-        content: const Text('¿Estás seguro de que deseas entregar este alquiler?'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () {
-              Navigator.of(context).pop(false);
-            },
-          ),
-          TextButton(
-            child: const Text('Confirmar'),
-            onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-          ),
-        ],
-      );
-    },
-  );
-
-  if (confirm != true) {
-    return; // Si el usuario cancela, no hacer nada
-  }
-
-  EasyLoading.show(status: 'Entregando...');
-
-  final response = await http.get(
-    Uri.parse(
-        '${GlobalConfig.apiHost}:3000/api/historial-alquiler/historyAlquiler/$id'),
-    headers: {
-      'Authorization': 'Bearer $token',
-    },
-  );
-
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    EasyLoading.dismiss();
-    fetchAlquileres();
-    // Aquí puedes agregar cualquier acción adicional después de entregar el alquiler
-  } else {
-    EasyLoading.dismiss();
-    throw Exception('Failed to entregar alquiler');
-  }
-}
 
   void _showCrearAlquilerDialog() {
     final TextEditingController nombreController = TextEditingController();
@@ -327,40 +276,46 @@ class _AlquileresPageState extends State<AlquileresPage> {
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
-              fetchHistorial();
               showModalBottomSheet(
                 context: context,
                 builder: (BuildContext context) {
-                  return ListView.builder(
-                    itemCount: historial.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5.0, horizontal: 10.0),
-                        // decoration: BoxDecoration(
-                        //   border: Border.all(color: Colors.grey),
-                        //   borderRadius: BorderRadius.circular(10.0),
-                        // ),
-                        child: ListTile(
-                          title: Text(
-                            historial[index].nombreCliente,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color.fromARGB(
-                                  255, 26, 47, 165), // Azul turquesa
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  'Fecha: ${DateFormat('dd/MM/yyyy').format(historial[index].fechaCreacion)}'),
-                              Text('Valor Pago: ${historial[index].valorPago}'),
-                            ],
-                          ),
-                          isThreeLine: true,
-                        ),
-                      );
+                  return FutureBuilder<List<HistorialAlquiler>>(
+                    future: fetchHistorial(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No hay historial disponible'));
+                      } else {
+                        return ListView.builder(
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 5.0, horizontal: 10.0),
+                              child: ListTile(
+                                title: Text(
+                                  snapshot.data![index].nombreCliente,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 26, 47, 165), // Azul turquesa
+                                  ),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Fecha: ${DateFormat('dd/MM/yyyy').format(snapshot.data![index].fechaCreacion)}'),
+                                    Text('Valor Pago: ${snapshot.data![index].valorPago}'),
+                                  ],
+                                ),
+                                isThreeLine: true,
+                              ),
+                            );
+                          },
+                        );
+                      }
                     },
                   );
                 },
@@ -418,3 +373,4 @@ void main() {
     ),
   );
 }
+
