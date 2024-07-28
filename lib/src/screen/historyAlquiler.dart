@@ -33,14 +33,14 @@ class RegistroHistorial {
 }
 
 // Paso 2: Crear el widget Historial
-class Historial extends StatefulWidget {
-  const Historial({super.key});
+class HistoryAlquiler extends StatefulWidget {
+  const HistoryAlquiler({super.key});
 
   @override
-  _HistorialState createState() => _HistorialState();
+  _HistoryAlquilerState createState() => _HistoryAlquilerState();
 }
 
-class _HistorialState extends State<Historial> {
+class _HistoryAlquilerState extends State<HistoryAlquiler> {
   String tipoFiltro = 'dia';
   DateTime selectedDate = DateTime.now();
   List<RegistroHistorial> historial = [];
@@ -62,7 +62,7 @@ class _HistorialState extends State<Historial> {
 
     EasyLoading.show(status: 'Cargando...');
 
-    final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/historial/fecha');
+    final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/historial-alquiler/fecha');
     final headers = {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ class _HistorialState extends State<Historial> {
 void main() {
   runApp(
     MaterialApp(
-      home: const Historial(),
+      home: const HistoryAlquiler(),
       builder: EasyLoading.init(),
     ),
   );

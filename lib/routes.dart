@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:parqueadero/src/screen/alquiler.dart';
 import 'package:parqueadero/src/screen/clientes.dart';
 import 'package:parqueadero/src/screen/history.dart';
+import 'package:parqueadero/src/screen/historyAlquiler.dart';
 import 'package:parqueadero/src/screen/home.dart';
 import 'package:parqueadero/src/screen/login.dart';
 import 'package:parqueadero/src/screen/register.dart';
@@ -15,6 +16,7 @@ class Routes {
   static const String cliente = '/cliente';
   static const String historial = '/historial';
   static const String alquiler = '/alquiler';
+  static const String histiryAlquiler = '/historyAlquiler';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -29,7 +31,9 @@ class Routes {
       case historial:
         return MaterialPageRoute(builder: (_) => const Historial()); 
       case alquiler:
-        return MaterialPageRoute(builder: (_) => const AlquileresPage());   
+        return MaterialPageRoute(builder: (_) => const AlquileresPage());
+      case histiryAlquiler:
+        return MaterialPageRoute(builder: (_) => const HistoryAlquiler());     
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

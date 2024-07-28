@@ -376,53 +376,54 @@ class _AlquileresPageState extends State<AlquileresPage> {
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (BuildContext context) {
-                  return FutureBuilder<List<HistorialAlquiler>>(
-                    future: fetchHistorial(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(
-                            child: Text('No hay historial disponible'));
-                      } else {
-                        return ListView.builder(
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 5.0, horizontal: 10.0),
-                              child: ListTile(
-                                title: Text(
-                                  snapshot.data![index].nombreCliente,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color.fromARGB(255, 26, 47, 165),
-                                  ),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        'Fecha: ${DateFormat('dd/MM/yyyy').format(snapshot.data![index].fechaCreacion)}'),
-                                    Text(
-                                        'Valor Pago: ${snapshot.data![index].valorPago}'),
-                                  ],
-                                ),
-                                isThreeLine: true,
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    },
-                  );
-                },
-              );
+              Navigator.pushNamed(context, Routes.histiryAlquiler);
+              // showModalBottomSheet(
+              //   context: context,
+              //   builder: (BuildContext context) {
+              //     return FutureBuilder<List<HistorialAlquiler>>(
+              //       future: fetchHistorial(),
+              //       builder: (context, snapshot) {
+              //         if (snapshot.connectionState == ConnectionState.waiting) {
+              //           return const Center(child: CircularProgressIndicator());
+              //         } else if (snapshot.hasError) {
+              //           return Center(child: Text('Error: ${snapshot.error}'));
+              //         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              //           return const Center(
+              //               child: Text('No hay historial disponible'));
+              //         } else {
+              //           return ListView.builder(
+              //             itemCount: snapshot.data!.length,
+              //             itemBuilder: (context, index) {
+              //               return Container(
+              //                 margin: const EdgeInsets.symmetric(
+              //                     vertical: 5.0, horizontal: 10.0),
+              //                 child: ListTile(
+              //                   title: Text(
+              //                     snapshot.data![index].nombreCliente,
+              //                     style: const TextStyle(
+              //                       fontWeight: FontWeight.bold,
+              //                       color: Color.fromARGB(255, 26, 47, 165),
+              //                     ),
+              //                   ),
+              //                   subtitle: Column(
+              //                     crossAxisAlignment: CrossAxisAlignment.start,
+              //                     children: [
+              //                       Text(
+              //                           'Fecha: ${DateFormat('dd/MM/yyyy').format(snapshot.data![index].fechaCreacion)}'),
+              //                       Text(
+              //                           'Valor Pago: ${snapshot.data![index].valorPago}'),
+              //                     ],
+              //                   ),
+              //                   isThreeLine: true,
+              //                 ),
+              //               );
+              //             },
+              //           );
+              //         }
+              //       },
+              //     );
+              //   },
+              // );
             },
           ),
         ],
