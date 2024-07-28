@@ -949,16 +949,16 @@ class _ClienteListPageState extends State<ClienteListPage> {
       appBar: CustomAppBar.buildAppBar(context),
       body: Column(
         children: [
-          // Padding(
-          //   padding: const EdgeInsets.all(16.0),
-          //   child: Text(
-          //     'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
-          //     style: const TextStyle(
-          //       fontSize: 24,
-          //       fontWeight: FontWeight.bold,
-          //     ),
-          //   ),
-          // ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: clientes.length,
