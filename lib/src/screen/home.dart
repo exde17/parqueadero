@@ -32,7 +32,7 @@ class HomeState extends State<Home> {
   Widget build(BuildContext context) {
     SizedBox(height: MediaQuery.of(context).size.height * 0.02);
     return Scaffold(
-        appBar: CustomAppBar.buildAppBar(context),
+        // appBar: CustomAppBar.buildAppBar(context),
         body: const Center(
           child: Center(
             child: Text('Home'),

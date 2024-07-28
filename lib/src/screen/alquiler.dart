@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:parqueadero/routes.dart';
 import 'package:parqueadero/src/screen/clientes.dart';
+import 'package:parqueadero/src/utils/bar.dart';
 import 'package:parqueadero/src/utils/bottom_navigation.dart.dart';
 import 'package:parqueadero/src/utils/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -367,16 +368,20 @@ class _AlquileresPageState extends State<AlquileresPage> {
     );
   }
 
+  void _navigateToHistorial(BuildContext context) {
+    Navigator.pushNamed(context, Routes.histiryAlquiler);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Alquileres'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.pushNamed(context, Routes.histiryAlquiler);
+      // appBar: AppBar(
+      //   title: const Text('Alquileres'),
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.history),
+      //       onPressed: () {
+      //         Navigator.pushNamed(context, Routes.histiryAlquiler);
               // showModalBottomSheet(
               //   context: context,
               //   builder: (BuildContext context) {
@@ -424,10 +429,11 @@ class _AlquileresPageState extends State<AlquileresPage> {
               //     );
               //   },
               // );
-            },
-          ),
-        ],
-      ),
+      //       },
+      //     ),
+      //   ],
+      // ),
+      appBar: CustomAppBar.buildAppBar(context, () => _navigateToHistorial(context)),
       body: Column(
         children: [
           Padding(

@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
+import 'package:parqueadero/routes.dart';
 import 'package:parqueadero/src/utils/bar.dart';
+import 'package:parqueadero/src/utils/bottom_navigation.dart.dart';
 import 'package:parqueadero/src/utils/config.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -45,6 +47,19 @@ class _HistoryAlquilerState extends State<HistoryAlquiler> {
   DateTime selectedDate = DateTime.now();
   List<RegistroHistorial> historial = [];
   double totalFiltrado = 0.0;
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      if (index == 0) {
+        Navigator.pushNamed(context, Routes.cliente);
+      }
+      if (index == 1) {
+        Navigator.pushNamed(context, Routes.alquiler);
+      }
+    });
+  }
 
   void showCustomToastWithIcon(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -121,10 +136,15 @@ class _HistoryAlquilerState extends State<HistoryAlquiler> {
     fetchHistorial(tipoFiltro, selectedDate);
   }
 
+  void _navigateToHistorial(BuildContext context) {
+    Navigator.pushNamed(context, Routes.alquiler);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar.buildAppBar(context),
+      // appBar: CustomAppBar.buildAppBar(context),
+      appBar: CustomAppBar.buildAppBar(context, () => _navigateToHistorial(context)),
       body: Column(
         children: [
           Padding(
@@ -190,6 +210,9 @@ class _HistoryAlquilerState extends State<HistoryAlquiler> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: CustonBottomNavigation(
+        onItemTapped: _onItemTapped,
       ),
     );
   }
