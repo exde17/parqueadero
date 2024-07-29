@@ -86,7 +86,7 @@ class _AlquileresPageState extends State<AlquileresPage> {
     setState(() {
       _selectedIndex = index;
       if (index == 0) {
-        Navigator.pushNamed(context, Routes.historial);
+        Navigator.pushNamed(context, Routes.cliente);
       }
       if (index == 1) {
         Navigator.pushNamed(context, Routes.alquiler);
