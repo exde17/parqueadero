@@ -1,3 +1,4 @@
+// ignore_for_file: use_build_context_synchronously
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -9,6 +10,7 @@ import 'package:parqueadero/routes.dart';
 import 'package:parqueadero/src/utils/bar.dart';
 import 'package:parqueadero/src/utils/bottom_navigation.dart.dart';
 import 'package:parqueadero/src/utils/config.dart';
+import 'package:parqueadero/src/utils/modal-actualizar-cliente.dart';
 import 'package:parqueadero/src/utils/modal-detalle.dart';
 import 'package:parqueadero/src/utils/toast.dart';
 import 'package:logger/logger.dart';
@@ -131,94 +133,103 @@ class _ClienteListPageState extends State<ClienteListPage> {
         showCustomToastWithIcon(context, 'Error al cargar los clientes');
       }
     } catch (e) {
-      showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
+      showCustomToastWithIcon(
+          context, 'Error de conexión. Inténtalo de nuevo.');
     } finally {
       EasyLoading.dismiss();
     }
   }
 
-  Future<void> fetchTotalPagos() async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String? token = prefs.getString('auth_token');
-
-  if (token == null) {
-    showCustomToastWithIcon(context, 'Error: Token no encontrado');
-    return;
-  }
-
-  EasyLoading.show(status: 'Cargando total de pagos...');
-
-  final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/sumaPagos');
-  final headers = {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer $token",
-  };
-  try {
-    final response = await http.get(url, headers: headers);
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final responseBody = response.body;
-
-      // Intentar decodificar el JSON
-      try {
-        final data = json.decode(responseBody);
-        setState(() {
-          totalPagos = double.parse(data['totalPagos'].replaceAll('.', '').replaceAll(',', '.')); // Manejar la conversión correcta
-        });
-      } catch (e) {
-        // Si falla la decodificación de JSON, tratar la respuesta como un número entero
-        setState(() {
-          totalPagos = double.parse(responseBody.replaceAll('.', '').replaceAll(',', '.')); // Manejar la conversión correcta
-        });
-      }
-    } else {
-      // ignore: use_build_context_synchronously
-      showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
+  //------------------------------------------------------------
+  Future<void> _mostrarModalActualizarCliente(
+      Map<String, String> cliente) async {
+    if (cliente['id'] == null ||
+        cliente['nombre'] == null ||
+        cliente['apellido'] == null ||
+        cliente['guarda'] == null ||
+        cliente['telefono'] == null ||
+        cliente['documento'] == null) {
+      showCustomToastWithIcon(
+          context, 'Datos del cliente incompletos. Inténtalo de nuevo.');
+      return;
     }
-  } catch (e) {
-    logger.e('Error al cargar el total de pagos: $e');
-    // ignore: use_build_context_synchronously
-    showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
-  } finally {
-    EasyLoading.dismiss();
+
+    final resultado = await showDialog<bool>(
+      context: context,
+      builder: (context) => ActualizarClienteModal(
+        clienteId: cliente['id']!,
+        nombreInicial: cliente['nombre']!,
+        apellido: cliente['apellido']!,
+        guarda: cliente['guarda']!,
+        telefono: cliente['telefono']!,
+        documento: cliente['documento']!,
+        valor: double.parse(cliente['valor']!),
+      ),
+    );
+
+    if (resultado == true) {
+      // Actualiza la lista de clientes si es necesario
+      fetchClientes();
+      setState(() {
+        // Aquí puedes actualizar la lista de clientes si es necesario
+      });
+    }
   }
-}
 
-  // Future<void> fetchTotalPagos() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   final String? token = prefs.getString('auth_token');
+  //-----------------------------------------------------------
 
-  //   if (token == null) {
-  //     showCustomToastWithIcon(context, 'Error: Token no encontrado');
-  //     return;
-  //   }
+  Future<void> fetchTotalPagos() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('auth_token');
 
-  //   EasyLoading.show(status: 'Cargando total de pagos...');
+    if (token == null) {
+      showCustomToastWithIcon(context, 'Error: Token no encontrado');
+      return;
+    }
 
-  //   final Uri url = Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/sumaPagos');
-  //   final headers = {
-  //     "Content-Type": "application/json",
-  //     "Authorization": "Bearer $token",
-  //   };
-  //   try {
-      
-  //     final response = await http.get(url, headers: headers);
-  //     // logger.i('fetchTotalPagos: ');
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       final data = json.decode(response.body);
-  //       setState(() {
-  //         totalPagos = data['totalPagos'];
-  //       });
-  //     } else {
-  //       showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
-  //     }
-  //   } catch (e) {
-  //     logger.e('fetchTotalPagos: $e');
-  //     showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
-  //   } finally {
-  //     EasyLoading.dismiss();
-  //   }
-  // }
+    EasyLoading.show(status: 'Cargando total de pagos...');
+
+    final Uri url =
+        Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/sumaPagos');
+    final headers = {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer $token",
+    };
+    try {
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseBody = response.body;
+
+        // Intentar decodificar el JSON
+        try {
+          final data = json.decode(responseBody);
+          setState(() {
+            totalPagos = double.parse(data['totalPagos']
+                .replaceAll('.', '')
+                .replaceAll(',', '.')); // Manejar la conversión correcta
+          });
+        } catch (e) {
+          // Si falla la decodificación de JSON, tratar la respuesta como un número entero
+          setState(() {
+            totalPagos = double.parse(responseBody
+                .replaceAll('.', '')
+                .replaceAll(',', '.')); // Manejar la conversión correcta
+          });
+        }
+      } else {
+        // ignore: use_build_context_synchronously
+        showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
+      }
+    } catch (e) {
+      logger.e('Error al cargar el total de pagos: $e');
+      // ignore: use_build_context_synchronously
+      showCustomToastWithIcon(
+          context, 'Error de conexión. Inténtalo de nuevo.');
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
 
   void crearCliente() {
     showDialog(
@@ -352,7 +363,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
         Navigator.of(context).pop();
         showToastMario(context, 'Cliente creado exitosamente');
         fetchClientes();
-        fetchTotalPagos();  // Refrescar la suma de los pagos
+        fetchTotalPagos(); // Refrescar la suma de los pagos
       } else {
         var responseBody = response.body;
         var decodedResponse = jsonDecode(responseBody);
@@ -360,8 +371,9 @@ class _ClienteListPageState extends State<ClienteListPage> {
         showCustomToastWithIcon(context, message);
       }
     } catch (e) {
-      print('Error: $e'); // Imprime el error para depuración
-      showCustomToastWithIcon(context, 'Error al crear el cliente. Inténtalo de nuevo.');
+      logger.e('Error: $e'); // Imprime el error para depuración
+      showCustomToastWithIcon(
+          context, 'Error al crear el cliente. Inténtalo de nuevo.');
     } finally {
       EasyLoading.dismiss();
     }
@@ -378,9 +390,11 @@ class _ClienteListPageState extends State<ClienteListPage> {
       EasyLoading.show(status: 'Cargando...');
       final datosPago = await obtenerDatosPago(cliente.id);
       EasyLoading.dismiss();
+      // ignore: use_build_context_synchronously
       mostrarModalPago(context, datosPago);
     } catch (e) {
       EasyLoading.dismiss();
+      // ignore: use_build_context_synchronously
       showCustomToastWithIcon(context, 'Error al cargar los datos del pago');
     }
   }
@@ -397,7 +411,8 @@ class _ClienteListPageState extends State<ClienteListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: CustomAppBar.buildAppBar(context),
-      appBar: CustomAppBar.buildAppBar(context, () => _navigateToHistorial(context)),
+      appBar: CustomAppBar.buildAppBar(
+          context, () => _navigateToHistorial(context)),
       body: Column(
         children: [
           Padding(
@@ -421,7 +436,8 @@ class _ClienteListPageState extends State<ClienteListPage> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!cliente.pago) Text('Valor a pagar: \$${cliente.valor}'),
+                        if (!cliente.pago)
+                          Text('Valor a pagar: \$${cliente.valor}'),
                         Text(
                           cliente.pago ? 'Pago' : 'Sin Pago',
                           style: TextStyle(
@@ -445,12 +461,24 @@ class _ClienteListPageState extends State<ClienteListPage> {
                           icon: const Icon(Icons.monetization_on),
                           onPressed: cliente.pago && !cliente.novedad
                               ? null
-                              : () => _mostrarModalYRegistrarPago(
-                                  context, cliente.id, cliente.valor, cliente.nombre),
+                              : () => _mostrarModalYRegistrarPago(context,
+                                  cliente.id, cliente.valor, cliente.nombre),
                         ),
                         IconButton(
                           icon: const Icon(Icons.info),
                           onPressed: () => verDetalle(cliente),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => _mostrarModalActualizarCliente({
+                            'id': cliente.id,
+                            'nombre': cliente.nombre,
+                            'apellido': cliente.apellido ?? '',
+                            'guarda': cliente.guarda ?? '',
+                            'telefono': cliente.telefono ?? '',
+                            'documento': cliente.documento ?? '',
+                            'valor': cliente.valor.toString(),
+                          }),
                         ),
                       ],
                     ),
@@ -582,7 +610,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
       mostrarModalPago(context, datosPago);
     } catch (e) {
       EasyLoading.dismiss();
-      print(e);
+      logger.e(e);
       // Manejo del error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al obtener los datos del pago')),
@@ -599,8 +627,8 @@ Future<Map<String, dynamic>> obtenerDatosPago(String clienteId) async {
     throw Exception('Error: Token no encontrado');
   }
 
-  final url =
-      Uri.parse('${GlobalConfig.apiHost}:3000/api/pago-total/valores/$clienteId');
+  final url = Uri.parse(
+      '${GlobalConfig.apiHost}:3000/api/pago-total/valores/$clienteId');
   final response = await http.get(url, headers: {
     "Content-Type": "application/json",
     "Authorization": "Bearer $token",
