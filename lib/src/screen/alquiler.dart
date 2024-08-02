@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:parqueadero/routes.dart';
 import 'package:parqueadero/src/screen/clientes.dart';
 import 'package:parqueadero/src/utils/bar.dart';
@@ -18,6 +20,7 @@ class Alquiler {
   final String tipo;
   final int precio;
   final bool pending;
+  bool isPause;
 
   Alquiler({
     required this.id,
@@ -25,6 +28,7 @@ class Alquiler {
     required this.tipo,
     required this.precio,
     required this.pending,
+    required this.isPause,
   });
 
   factory Alquiler.fromJson(Map<String, dynamic> json) {
@@ -36,9 +40,11 @@ class Alquiler {
           ? json['precio']
           : int.parse(json['precio'].toString()),
       pending: json['pending'] ?? false, // Asegurarse de que este campo existe
+      isPause: json['ispaused'] ?? false,
     );
   }
 }
+
 
 class HistorialAlquiler {
   final DateTime fechaCreacion;
@@ -177,8 +183,9 @@ class _AlquileresPageState extends State<AlquileresPage> {
         _showCustomToastWithIcon(context, 'Error al cargar el total de pagos');
       }
     } catch (e) {
-      print('Error al cargar el total de pagos: $e');
-      _showCustomToastWithIcon(context, 'Error de conexión. Inténtalo de nuevo.');
+      logger.e('Error al cargar el total de pagos: $e');
+      _showCustomToastWithIcon(
+          context, 'Error de conexión. Inténtalo de nuevo.');
     } finally {
       EasyLoading.dismiss();
     }
@@ -206,8 +213,10 @@ class _AlquileresPageState extends State<AlquileresPage> {
       setState(() {
         alquileres =
             body.map((dynamic item) => Alquiler.fromJson(item)).toList();
-        _isEntregarEnabledList = alquileres.map((alquiler) => alquiler.pending).toList();
+        _isEntregarEnabledList =
+            alquileres.map((alquiler) => alquiler.pending).toList();
       });
+      logger.i('isPause: ${alquileres[0].isPause}');
       EasyLoading.dismiss();
     } else {
       EasyLoading.dismiss();
@@ -241,6 +250,36 @@ class _AlquileresPageState extends State<AlquileresPage> {
     } else {
       EasyLoading.dismiss();
       throw Exception('Failed to load historial');
+    }
+  }
+
+  //actualizar estado isPaused
+  Future<void> updateEstadoPaused(String id) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('auth_token');
+
+    if (token == null) {
+      throw Exception('Token no encontrado');
+    }
+
+    EasyLoading.show(status: 'Actualizando...');
+
+    final response = await http.patch(
+      Uri.parse('${GlobalConfig.apiHost}:3000/api/alquiler/ispaused/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      //mensaje de confirmación
+      _showCustomToastWithIcon(context, 'cliente pago en pausa');
+      EasyLoading.dismiss();
+      fetchAlquileres(); // Refrescar la lista de alquileres
+    } else {
+      EasyLoading.dismiss();
+      throw Exception('Failed to update estado');
     }
   }
 
@@ -297,6 +336,14 @@ class _AlquileresPageState extends State<AlquileresPage> {
               child: const Text('Cancelar'),
               onPressed: () {
                 Navigator.of(context).pop(false);
+              },
+            ),
+            ElevatedButton(
+              child: const Text('Pausar'),
+              onPressed: () {
+                
+                updateEstadoPaused(id);
+                Navigator.of(context).pop();
               },
             ),
             TextButton(
@@ -375,65 +422,9 @@ class _AlquileresPageState extends State<AlquileresPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Alquileres'),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.history),
-      //       onPressed: () {
-      //         Navigator.pushNamed(context, Routes.histiryAlquiler);
-              // showModalBottomSheet(
-              //   context: context,
-              //   builder: (BuildContext context) {
-              //     return FutureBuilder<List<HistorialAlquiler>>(
-              //       future: fetchHistorial(),
-              //       builder: (context, snapshot) {
-              //         if (snapshot.connectionState == ConnectionState.waiting) {
-              //           return const Center(child: CircularProgressIndicator());
-              //         } else if (snapshot.hasError) {
-              //           return Center(child: Text('Error: ${snapshot.error}'));
-              //         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              //           return const Center(
-              //               child: Text('No hay historial disponible'));
-              //         } else {
-              //           return ListView.builder(
-              //             itemCount: snapshot.data!.length,
-              //             itemBuilder: (context, index) {
-              //               return Container(
-              //                 margin: const EdgeInsets.symmetric(
-              //                     vertical: 5.0, horizontal: 10.0),
-              //                 child: ListTile(
-              //                   title: Text(
-              //                     snapshot.data![index].nombreCliente,
-              //                     style: const TextStyle(
-              //                       fontWeight: FontWeight.bold,
-              //                       color: Color.fromARGB(255, 26, 47, 165),
-              //                     ),
-              //                   ),
-              //                   subtitle: Column(
-              //                     crossAxisAlignment: CrossAxisAlignment.start,
-              //                     children: [
-              //                       Text(
-              //                           'Fecha: ${DateFormat('dd/MM/yyyy').format(snapshot.data![index].fechaCreacion)}'),
-              //                       Text(
-              //                           'Valor Pago: ${snapshot.data![index].valorPago}'),
-              //                     ],
-              //                   ),
-              //                   isThreeLine: true,
-              //                 ),
-              //               );
-              //             },
-              //           );
-              //         }
-              //       },
-              //     );
-              //   },
-              // );
-      //       },
-      //     ),
-      //   ],
-      // ),
-      appBar: CustomAppBar.buildAppBar(context, () => _navigateToHistorial(context)),
+      
+      appBar: CustomAppBar.buildAppBar(
+          context, () => _navigateToHistorial(context)),
       body: Column(
         children: [
           Padding(
@@ -452,6 +443,8 @@ class _AlquileresPageState extends State<AlquileresPage> {
                 : ListView.builder(
                     itemCount: alquileres.length,
                     itemBuilder: (context, index) {
+                      logger.i('isPausehh: ${alquileres[index].isPause}');
+                      logger.i('id: ${alquileres[index].id}');
                       return Container(
                         margin: const EdgeInsets.symmetric(
                             vertical: 5.0, horizontal: 10.0),
@@ -471,21 +464,53 @@ class _AlquileresPageState extends State<AlquileresPage> {
                               '${alquileres[index].tipo} - \$${alquileres[index].precio}'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
+                            // children: [
+                            //   ElevatedButton(
+                            //     onPressed: _isEntregarEnabledList.isNotEmpty &&
+                            //             _isEntregarEnabledList[index]
+                            //         ? () => entregarAlquiler(alquileres[index].id)
+                            //         : null,
+                            //     style: ElevatedButton.styleFrom(
+                            //       backgroundColor: _isEntregarEnabledList.isNotEmpty &&
+                            //               _isEntregarEnabledList[index]
+                            //           ? Colors.green
+                            //           : null,
+                            //       foregroundColor: _isEntregarEnabledList.isNotEmpty &&
+                            //               _isEntregarEnabledList[index]
+                            //           ? Colors.white
+                            //           : null,
+                            //     ),
+                            //     child: const Text('Entregar'),
+                            //   ),
+                            //   IconButton(
+                            //     icon: const Icon(Icons.check),
+                            //     onPressed: () => _toggleEstadoPendiente(
+                            //         alquileres[index].id, index),
+                            //   ),
+                            // ],
+
                             children: [
+                              
                               ElevatedButton(
                                 onPressed: _isEntregarEnabledList.isNotEmpty &&
                                         _isEntregarEnabledList[index]
-                                    ? () => entregarAlquiler(alquileres[index].id)
+                                    ? () =>
+                                        entregarAlquiler(alquileres[index].id)
                                     : null,
+                                    
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: _isEntregarEnabledList.isNotEmpty &&
-                                          _isEntregarEnabledList[index]
-                                      ? Colors.green
-                                      : null,
-                                  foregroundColor: _isEntregarEnabledList.isNotEmpty &&
-                                          _isEntregarEnabledList[index]
-                                      ? Colors.white
-                                      : null,
+                                  backgroundColor:
+                                      _isEntregarEnabledList.isNotEmpty &&
+                                              _isEntregarEnabledList[index]
+                                          ? (alquileres[index].isPause
+                                              ? Colors.red
+                                              : Colors.green)
+                                          : null,
+                                  foregroundColor:
+                                      _isEntregarEnabledList.isNotEmpty &&
+                                              _isEntregarEnabledList[index]
+                                          ? Colors.white
+                                          : null,
                                 ),
                                 child: const Text('Entregar'),
                               ),
@@ -522,4 +547,3 @@ void main() {
     ),
   );
 }
-
