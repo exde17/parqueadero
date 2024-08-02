@@ -153,7 +153,8 @@ class _ClienteListPageState extends State<ClienteListPage> {
         cliente['apellido'] == null ||
         cliente['guarda'] == null ||
         cliente['telefono'] == null ||
-        cliente['documento'] == null) {
+        cliente['documento'] == null
+        ) {
       showCustomToastWithIcon(
           context, 'Datos del cliente incompletos. Inténtalo de nuevo.');
       return;
@@ -522,98 +523,206 @@ class _ClienteListPageState extends State<ClienteListPage> {
     Navigator.pushNamed(context, Routes.historial);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: CustomAppBar.buildAppBar(context),
-      appBar: CustomAppBar.buildAppBar(
-          context, () => _navigateToHistorial(context)),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: CustomAppBar.buildAppBar(
+        context, () => _navigateToHistorial(context)),
+    body: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: clientes.length,
-              itemBuilder: (context, index) {
-                final cliente = clientes[index];
-                return Card(
-                  child: ListTile(
-                    title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (!cliente.pago)
-                          Text('Valor a pagar: \$${cliente.valor}'),
-                        Text(
-                          cliente.pago ? 'Pago' : 'Sin Pago',
-                          style: TextStyle(
-                            color: cliente.pago
-                                ? (cliente.novedad ? Colors.red : Colors.green)
-                                : Colors.black,
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: clientes.length,
+            itemBuilder: (context, index) {
+              final cliente = clientes[index];
+              return Card(
+                child: ListTile(
+                  title: Row(
+                    children: [
+                      Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
+                      if (cliente.mensual)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Text(
+                            '(Pago Mensual)',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontStyle: FontStyle.italic,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.sync,
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!cliente.pago)
+                        Text('Valor a pagar: \$${cliente.valor}'),
+                      Text(
+                        cliente.pago ? 'Pago' : 'Sin Pago',
+                        style: TextStyle(
                           color: cliente.pago
                               ? (cliente.novedad ? Colors.red : Colors.green)
-                              : Colors.grey,
+                              : Colors.black,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.monetization_on),
-                          onPressed: cliente.pago && !cliente.novedad
-                              ? null
-                              : () => _mostrarModalYRegistrarPago(context,
-                                  cliente.id, cliente.valor, cliente.nombre),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.info),
-                          onPressed: () => verDetalle(cliente),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _mostrarModalActualizarCliente({
-                            'id': cliente.id,
-                            'nombre': cliente.nombre,
-                            'apellido': cliente.apellido ?? '',
-                            'guarda': cliente.guarda ?? '',
-                            'telefono': cliente.telefono ?? '',
-                            'documento': cliente.documento ?? '',
-                            'valor': cliente.valor.toString(),
-                          }),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.sync,
+                        color: cliente.pago
+                            ? (cliente.novedad ? Colors.red : Colors.green)
+                            : Colors.grey,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.monetization_on),
+                        onPressed: cliente.pago && !cliente.novedad
+                            ? null
+                            : () => _mostrarModalYRegistrarPago(context,
+                                cliente.id, cliente.valor, cliente.nombre),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.info),
+                        onPressed: () => verDetalle(cliente),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _mostrarModalActualizarCliente({
+                          'id': cliente.id,
+                          'nombre': cliente.nombre,
+                          'apellido': cliente.apellido ?? '',
+                          'guarda': cliente.guarda ?? '',
+                          'telefono': cliente.telefono ?? '',
+                          'documento': cliente.documento ?? '',
+                          'valor': cliente.valor.toString(),
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: crearCliente,
-        tooltip: 'Crear Cliente',
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: CustonBottomNavigation(
-        onItemTapped: _onItemTapped,
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: crearCliente,
+      tooltip: 'Crear Cliente',
+      child: const Icon(Icons.add),
+    ),
+    bottomNavigationBar: CustonBottomNavigation(
+      onItemTapped: _onItemTapped,
+    ),
+  );
+}
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     // appBar: CustomAppBar.buildAppBar(context),
+  //     appBar: CustomAppBar.buildAppBar(
+  //         context, () => _navigateToHistorial(context)),
+  //     body: Column(
+  //       children: [
+  //         Padding(
+  //           padding: const EdgeInsets.all(16.0),
+  //           child: Text(
+  //             'Total Pagos: \$${totalPagos.toStringAsFixed(2)}',
+  //             style: const TextStyle(
+  //               fontSize: 24,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //         Expanded(
+  //           child: ListView.builder(
+  //             itemCount: clientes.length,
+  //             itemBuilder: (context, index) {
+  //               final cliente = clientes[index];
+  //               return Card(
+  //                 child: ListTile(
+  //                   title: Text('${cliente.nombre} ${cliente.apellido ?? ''}'),
+  //                   subtitle: Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       if (!cliente.pago)
+  //                         Text('Valor a pagar: \$${cliente.valor}'),
+  //                       Text(
+  //                         cliente.pago ? 'Pago' : 'Sin Pago',
+  //                         style: TextStyle(
+  //                           color: cliente.pago
+  //                               ? (cliente.novedad ? Colors.red : Colors.green)
+  //                               : Colors.black,
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                   trailing: Row(
+  //                     mainAxisSize: MainAxisSize.min,
+  //                     children: [
+  //                       Icon(
+  //                         Icons.sync,
+  //                         color: cliente.pago
+  //                             ? (cliente.novedad ? Colors.red : Colors.green)
+  //                             : Colors.grey,
+  //                       ),
+  //                       IconButton(
+  //                         icon: const Icon(Icons.monetization_on),
+  //                         onPressed: cliente.pago && !cliente.novedad
+  //                             ? null
+  //                             : () => _mostrarModalYRegistrarPago(context,
+  //                                 cliente.id, cliente.valor, cliente.nombre),
+  //                       ),
+  //                       IconButton(
+  //                         icon: const Icon(Icons.info),
+  //                         onPressed: () => verDetalle(cliente),
+  //                       ),
+  //                       IconButton(
+  //                         icon: const Icon(Icons.edit),
+  //                         onPressed: () => _mostrarModalActualizarCliente({
+  //                           'id': cliente.id,
+  //                           'nombre': cliente.nombre,
+  //                           'apellido': cliente.apellido ?? '',
+  //                           'guarda': cliente.guarda ?? '',
+  //                           'telefono': cliente.telefono ?? '',
+  //                           'documento': cliente.documento ?? '',
+  //                           'valor': cliente.valor.toString(),
+  //                         }),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //               );
+  //             },
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //     floatingActionButton: FloatingActionButton(
+  //       onPressed: crearCliente,
+  //       tooltip: 'Crear Cliente',
+  //       child: const Icon(Icons.add),
+  //     ),
+  //     bottomNavigationBar: CustonBottomNavigation(
+  //       onItemTapped: _onItemTapped,
+  //     ),
+  //   );
+  // }
 
   void _mostrarModalYRegistrarPago(
       BuildContext context, String clienteId, double valor, String nombre) {
