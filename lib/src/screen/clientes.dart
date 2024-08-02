@@ -31,6 +31,7 @@ class Cliente {
   final bool isActive;
   final bool novedad;
   final bool pago;
+  final bool mensual;
 
   Cliente({
     required this.nombre,
@@ -43,6 +44,7 @@ class Cliente {
     required this.isActive,
     required this.novedad,
     required this.pago,
+    required this.mensual,
   });
 
   factory Cliente.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class Cliente {
       isActive: json['isActive'] ?? true,
       novedad: json['novedad'] ?? false,
       pago: json['pago'] ?? false,
+      mensual: json['pagoMensual'] ?? false,
     );
   }
 }
@@ -78,8 +81,10 @@ class ClienteListPage extends StatefulWidget {
 }
 
 class _ClienteListPageState extends State<ClienteListPage> {
+  
   int _selectedIndex = 0;
   double totalPagos = 0.0;
+
 
   void _onItemTapped(int index) {
     setState(() {
@@ -232,94 +237,202 @@ class _ClienteListPageState extends State<ClienteListPage> {
   }
 
   void crearCliente() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        final formKey = GlobalKey<FormState>();
-        final nombreController = TextEditingController();
-        final valorController = TextEditingController();
-        final apellidoController = TextEditingController();
-        final guardaController = TextEditingController();
-        final telefonoController = TextEditingController();
-        final documentoController = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      final formKey = GlobalKey<FormState>();
+      final nombreController = TextEditingController();
+      final valorController = TextEditingController();
+      final apellidoController = TextEditingController();
+      final guardaController = TextEditingController();
+      final telefonoController = TextEditingController();
+      final documentoController = TextEditingController();
+      bool pagoMensual = false;
 
-        return AlertDialog(
-          title: const Text('Crear Cliente'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: nombreController,
-                    decoration: const InputDecoration(labelText: 'Nombre'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese el nombre';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: valorController,
-                    decoration: const InputDecoration(labelText: 'Valor'),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Por favor ingrese el valor';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    controller: apellidoController,
-                    decoration: const InputDecoration(labelText: 'Apellido'),
-                  ),
-                  TextFormField(
-                    controller: guardaController,
-                    decoration: const InputDecoration(labelText: 'Guarda'),
-                  ),
-                  TextFormField(
-                    controller: telefonoController,
-                    decoration: const InputDecoration(labelText: 'Teléfono'),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  TextFormField(
-                    controller: documentoController,
-                    decoration: const InputDecoration(labelText: 'Documento'),
-                  ),
-                ],
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: const Text('Crear Cliente'),
+            content: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: nombreController,
+                      decoration: const InputDecoration(labelText: 'Nombre'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese el nombre';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: valorController,
+                      decoration: const InputDecoration(labelText: 'Valor'),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor ingrese el valor';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      controller: apellidoController,
+                      decoration: const InputDecoration(labelText: 'Apellido'),
+                    ),
+                    TextFormField(
+                      controller: guardaController,
+                      decoration: const InputDecoration(labelText: 'Guarda'),
+                    ),
+                    TextFormField(
+                      controller: telefonoController,
+                      decoration: const InputDecoration(labelText: 'Teléfono'),
+                      keyboardType: TextInputType.phone,
+                    ),
+                    TextFormField(
+                      controller: documentoController,
+                      decoration: const InputDecoration(labelText: 'Documento'),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Pago Mensual'),
+                      value: pagoMensual,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          pagoMensual = value ?? false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ElevatedButton(
-              child: const Text('Guardar'),
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  saveCliente(
-                    nombreController.text,
-                    double.parse(valorController.text),
-                    apellidoController.text,
-                    guardaController.text,
-                    telefonoController.text,
-                    documentoController.text,
-                    context,
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+            actions: [
+              TextButton(
+                child: const Text('Cancelar'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              ElevatedButton(
+                child: const Text('Guardar'),
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    saveCliente(
+                      nombreController.text,
+                      double.parse(valorController.text),
+                      apellidoController.text,
+                      guardaController.text,
+                      telefonoController.text,
+                      documentoController.text,
+                      pagoMensual,
+                      context,
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+  // void crearCliente() {
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text('Crear Cliente'),
+  //         content: Form(
+  //           key: formKey,
+  //           child: SingleChildScrollView(
+  //             child: Column(
+  //               children: [
+  //                 TextFormField(
+  //                   controller: nombreController,
+  //                   decoration: const InputDecoration(labelText: 'Nombre'),
+  //                   validator: (value) {
+  //                     if (value == null || value.isEmpty) {
+  //                       return 'Por favor ingrese el nombre';
+  //                     }
+  //                     return null;
+  //                   },
+  //                 ),
+  //                 TextFormField(
+  //                   controller: valorController,
+  //                   decoration: const InputDecoration(labelText: 'Valor'),
+  //                   keyboardType: TextInputType.number,
+  //                   validator: (value) {
+  //                     if (value == null || value.isEmpty) {
+  //                       return 'Por favor ingrese el valor';
+  //                     }
+  //                     return null;
+  //                   },
+  //                 ),
+                  
+  //                 TextFormField(
+  //                   controller: apellidoController,
+  //                   decoration: const InputDecoration(labelText: 'Apellido'),
+  //                 ),
+  //                 TextFormField(
+  //                   controller: guardaController,
+  //                   decoration: const InputDecoration(labelText: 'Guarda'),
+  //                 ),
+  //                 TextFormField(
+  //                   controller: telefonoController,
+  //                   decoration: const InputDecoration(labelText: 'Teléfono'),
+  //                   keyboardType: TextInputType.phone,
+  //                 ),
+  //                 TextFormField(
+  //                   controller: documentoController,
+  //                   decoration: const InputDecoration(labelText: 'Documento'),
+  //                 ),
+  //                 CheckboxListTile(
+  //                   title: const Text('Pago Mensual'),
+  //                   value: pagoMensual,
+  //                   onChanged: (bool? value) {
+  //                     setState(() {
+  //                       pagoMensual = value ?? false;
+  //                     });
+  //                   },
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             child: const Text('Cancelar'),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //           ElevatedButton(
+  //             child: const Text('Guardar'),
+  //             onPressed: () {
+  //               if (formKey.currentState!.validate()) {
+  //                 saveCliente(
+  //                   nombreController.text,
+  //                   double.parse(valorController.text),
+  //                   apellidoController.text,
+  //                   guardaController.text,
+  //                   telefonoController.text,
+  //                   documentoController.text,
+  //                   pagoMensual,
+  //                   context,
+  //                 );
+  //               }
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Future<void> saveCliente(
     String nombre,
@@ -328,6 +441,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
     String? guarda,
     String? telefono,
     String? documento,
+    bool pagoMensual,
     BuildContext context,
   ) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -356,6 +470,7 @@ class _ClienteListPageState extends State<ClienteListPage> {
           'guarda': guarda,
           'telefono': telefono,
           'documento': documento,
+          'pagoMensual': pagoMensual,
         }),
       );
 
