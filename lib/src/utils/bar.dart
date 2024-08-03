@@ -1,4 +1,3 @@
-
 // import 'package:flutter/material.dart';
 // import 'package:parqueadero/routes.dart';
 
@@ -87,17 +86,27 @@ class CustomAppBar {
       ),
       centerTitle: true,
       leading: IconButton(
-        icon: Icon(Icons.history_edu, size: MediaQuery.of(context).size.width * 0.08),
+        icon: Icon(Icons.history_edu,
+            size: MediaQuery.of(context).size.width * 0.08),
         color: Colors.blue,
         onPressed: () => onHomePressed(),
       ),
       actions: <Widget>[
         PopupMenuButton<String>(
           onSelected: (String value) {
-            if (value == 'perfil') {
-              // Navega a la pantalla de perfil
-            } else if (value == 'cerrar_sesion') {
-              Navigator.pushReplacementNamed(context, Routes.login);
+            switch (value) {
+              case 'perfil':
+                // Navega a la pantalla de perfil
+                break;
+              case 'cerrar_sesion':
+                Navigator.pushReplacementNamed(context, Routes.login);
+                break;
+              case 'configuracion':
+                Navigator.pushNamed(context, Routes.configuracion);
+                break;
+              default:
+                // Maneja otros casos si es necesario
+                break;
             }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -109,11 +118,15 @@ class CustomAppBar {
               value: 'cerrar_sesion',
               child: Text('Cerrar sesión'),
             ),
+            const PopupMenuItem<String>(
+              value: 'configuracion',
+              child: Text('configuracion'),
+            ),
           ],
-          icon: Icon(Icons.person, size: MediaQuery.of(context).size.width * 0.08),
+          icon: Icon(Icons.person,
+              size: MediaQuery.of(context).size.width * 0.08),
         ),
       ],
     );
   }
 }
-
