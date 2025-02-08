@@ -43,6 +43,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
             children: [
               ElevatedButton(
                 onPressed: () {
+                   Navigator.pushNamed(context, Routes.listClientes);
                   // Acción para borrar último pago cliente
                 },
                 style: ElevatedButton.styleFrom(
@@ -54,6 +55,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
+                  // Navigator.pushNamed(context, Routes.listClientes);
                   // Acción para borrar último pago alquiler
                 },
                 style: ElevatedButton.styleFrom(
